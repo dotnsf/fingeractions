@@ -1,0 +1,23 @@
+html, body{
+  text-align: center;
+  background-color: #fafafa;
+  font-size: 20px;
+  color: #333;
+}
+#mycanvas{
+  border: 1px solid #333;
+}
+#result{
+  width: 100%;
+}
+
+h3{
+  font-weight: bold;
+  color: #0000ff;
+  text-align: center;
+  margin: 0px;
+  border: 0px;
+  padding: 0px;
+}
+
+

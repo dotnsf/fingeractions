@@ -1,0 +1,25 @@
+{
+    "name": "fingeractions",
+    "version": "0.0.1",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "@cloudant/cloudant": "^3.0.1",
+        "basic-auth-connect": "1.0.x",
+        "body-parser": "1.17.x",
+        "canvas": "^1.6.11",
+        "cfenv": "~1.0.0",
+        "cors": "2.8.x",
+        "easyimage": "2.1.x",
+        "ejs": "2.5.5",
+        "express": "4.1.x",
+        "fs": "~0.0.1",
+        "multer": "1.1.x",
+        "uuid": "3.3.2"
+    },
+    "repository": {},
+    "engines": {
+        "node": "6.x"
+    }
+}

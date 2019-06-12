@@ -1,0 +1,174 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>SmertPhone Pen - Admin</title>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"/>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css"/>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<link href="./colorbox.css" rel="stylesheet"/> 
+<script type="text/javascript" src="./jquery.colorbox-min.js"></script>
+<script type="text/javascript" src="./cvi_busy_lib.js"></script>
+<script>
+var hot_border = 0.92;
+var warn_border = 0.9;
+
+var letters = [
+  "<%= letters[0] %>"
+<% for( var i = 1; i < letters.length; i ++ ){ %>
+  ,"<%= letters[i] %>"
+<% } %>
+];
+
+var image_ids = [
+  "<%= image_ids[0] %>"
+<% for( var i = 1; i < image_ids.length; i ++ ){ %>
+  ,"<%= image_ids[i] %>"
+<% } %>
+];
+
+var idx = 0;
+function autoCheckImage(){
+  var id = image_ids[idx];
+  var letter = letters[idx];
+  checkImage( id, letter );
+  if( idx + 1 < letters.length ){
+    idx ++;
+    setTimeout( "autoCheckImage()", 1000 );
+  }
+}
+
+$(function(){
+  autoCheckImage();
+});
+
+function checkImage( id, letter ){
+  $('#check_' + id).html( '&nbsp;' );
+//  var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'チェック中', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+  $.ajax({
+    type: "GET",
+    url: "./check?id=" + id,
+    success: function( data ){
+//      obj.remove();
+      //console.log( data );
+      var json = JSON.parse( data );
+      var image_id = json.image_id;
+      if( image_id.indexOf( "error-" ) != 0 ){
+        var similar_images = json.similar_images;
+        var check_result = "";
+        var score_max = 0.0;
+        for( i = 0; i < similar_images.length; i ++ ){
+          var similar_image = similar_images[i];
+          var s_image_id = similar_image.image_id;
+          var s_letter = similar_image.metadata.letter;
+          if( image_id != s_image_id && letter != s_letter ){
+            var s_score = similar_image.score;
+            if( s_score > score_max ){ score_max = s_score; };
+            var s_image_url = "./getimage?id=" + s_image_id;
+            var s_class = ( s_score >= hot_border ? 'hot' : ( s_score >= warn_border ? 'warn' : 'normal' ) );
+            var line = '(<a class="iframe" rel="external" href="' + s_image_url + '">' + s_image_id + '</a>) <span class="' + s_class + '"><b>' + s_letter + '</b> : ' + s_score + '</span><br/>';
+            check_result += line;
+          }
+        }
+
+        $('#check_' + id).html( check_result );
+        $('.iframe').colorbox( { iframe: true, width:"300px", height:"300px" } );
+        if( score_max >= hot_border ){
+           $('#'+id).removeClass( "info" );
+           $('#'+id).addClass( "danger" );
+        }else if( score_max >= warn_border ){
+           $('#'+id).removeClass( "info" );
+           $('#'+id).addClass( "warning" );
+        }
+        //$('#checkimagebutton_' + id).remove();
+      }
+    },
+    error: function( jqXHR, textStatus, errorThrown ){
+//      obj.remove();
+      console.log( textStatus + " : " + errorThrown );
+    }
+  });
+}
+
+function delImage( id ){
+  if( window.confirm( 'ID: ' + id + ' のデータを削除します' ) ){
+    var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'削除中', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+
+    $.ajax({
+      type: "DELETE",
+      url: "./del_image",
+      data: "id=" + id,
+      success: function( data ){
+        obj.remove();
+        //console.log( data );
+        var json = JSON.parse( data );
+        var image_id = json.image_id;
+        if( image_id.indexOf( "error-" ) != 0 ){
+          $('#'+image_id).remove();
+        }
+      },
+      error: function( jqXHR, textStatus, errorThrown ){
+        obj.remove();
+        console.log( textStatus + " : " + errorThrown );
+      }
+    });
+  }
+}
+</script>
+<style>
+.hot{
+  color: #cc0000;
+}
+.warn{
+  color: #ffa500;
+}
+</style>
+</head>
+<body>
+  <!-- //navi -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="./admin">学習済みイメージ</a>
+      <button class="navbar-toggle" data-toggle="collapse" data-target=".target">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse target">
+      <ul class="nav navbar-nav navbar-right">   
+      	<li>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!-- navi// -->
+
+  <!-- //list -->
+  <div class="container" style="padding:60px 0;">
+    <table class="table table-bordered">
+      <thead>
+        <tr style="background-color: #ffffcc;"><th>ID</th><th colspan="2">Image</th><th>Letter</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+<% for( var i = 0; i < letters.length; i ++ ){ %>
+<tr class="info" id="<%= image_ids[i] %>">
+ <td><%= image_ids[i] %></td>
+ <td><img src="<%= image_urls[i] %>"/></td>
+ <td id="check_<%= image_ids[i] %>">&nbsp;</td>
+ <td><%= letters[i] %></td>
+ <td>
+  <button type="button" id="delimagebutton_<%= image_ids[i] %>" class="btn btn-danger" onClick="delImage('<%= image_ids[i] %>');"><i class="glyphicon glyphicon-trash"></i></button>
+<!--
+  <button type="button" id="checkimagebutton_<%= image_ids[i] %>" class="btn btn-info" onClick="checkImage('<%= image_ids[i] %>', '<%= letters[i] %>' );"><i class="glyphicon glyphicon-eye-close"></i></button>
+-->
+ </td>
+</tr>
+<% } %>
+      </tbody>
+    </table>
+  </div>
+  <!-- list// -->
+</body>
+</html>
+

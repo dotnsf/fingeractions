@@ -1,0 +1,134 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>admin.ejs</title>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="//cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.css"/>
+<script src="//cdn.datatables.net/t/bs-3.3.6/jqc-1.12.0,dt-1.10.11/datatables.min.js"></script>
+<link href="./colorbox.css" rel="stylesheet"/>
+<script type="text/javascript" src="./jquery.colorbox-min.js"></script>
+<script type="text/javascript" src="./cvi_busy_lib.js"></script>
+<script>
+$(function(){
+  $.extend( $.fn.dataTable.defaults, {
+    language: {
+      url: '//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Japanese.json'
+    }
+  });
+  $('#image_table').DataTable({
+    /*
+    lengthChange: false,
+    searching: false,
+    ordering: true,
+    info: true,
+    paging: true,
+    */
+    columnDefs: [{
+      targets: [ 0, 1, 4 ],
+      orderable: false,
+      searchable: false
+    }],
+    order: [ [ 3, 'desc' ] ]
+  });
+});
+
+function delImage( id ){
+  if( window.confirm( 'ID: ' + id + ' のデータを削除します' ) ){
+    var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'削除中', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+
+    $.ajax({
+      type: "DELETE",
+      url: "./image/" + id,
+      success: function( data ){
+        obj.remove();
+        //console.log( data );
+        location.reload();
+      },
+      error: function( jqXHR, textStatus, errorThrown ){
+        obj.remove();
+        console.log( textStatus + " : " + errorThrown );
+      }
+    });
+  }
+}
+
+function reset(){
+  if( window.confirm( '全データを削除します' ) ){
+    var obj = getBusyOverlay( 'viewport', { color:'black', opacity:0.5, text:'削除中', style:'text-decoration:blink;font-weight:bold;font-size:12px;color:white' } );
+
+    $.ajax({
+      type: "DELETE",
+      url: "./images",
+      success: function( data ){
+        obj.remove();
+        //console.log( data );
+        location.reload();
+      },
+      error: function( jqXHR, textStatus, errorThrown ){
+        obj.remove();
+        console.log( textStatus + " : " + errorThrown );
+      }
+    });
+  }
+}
+
+function getPixels( pixels ){
+  //console.log( pixels );
+  var s = '';
+  for( var i = 0; i < 16; i ++ ){
+    s += JSON.stringify( pixels.slice( 16 * i, 16 * ( i + 1 ) ) ) + '\n';
+  }
+  alert( s );
+}
+</script>
+<style>
+</style>
+</head>
+<body>
+  <!-- //navi -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="./admin">学習済みイメージ</a>
+      <button class="navbar-toggle" data-toggle="collapse" data-target=".target">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse target">
+      <ul class="nav navbar-nav navbar-right">
+      	<li>
+          <button type="button" class="btn btn-danger" onClick="reset();">Reset</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  <!-- navi// -->
+
+  <!-- //list -->
+  <div class="container" style="padding:100px 0;">
+    <table class="table table-bordered" id="image_table">
+      <thead>
+        <tr style="background-color: #ffffcc;"><th colspan="2">Image</th><th>Tag</th><th>Timestamp</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+<% for( var i = 0; i < images.length; i ++ ){ %>
+<tr class="info" id="<%= images[i]._id %>">
+ <td><img src="./image/<%= images[i]._id %>" width="128" title="<%= images[i]._id %>"/></td>
+ <td><img src="./image/<%= images[i]._id %>?mini=1" width="128"/></td>
+ <td><%= images[i].tag %></td>
+ <td><%= images[i].timestamp %></td>
+ <td>
+  <button type="button" id="getpixelsbutton_<%= images[i]._id %>" class="btn btn-info" onClick="getPixels([<%= images[i].pixels %>]);">Pixels</button>
+  <button type="button" id="delimagebutton_<%= images[i]._id %>" class="btn btn-warning" onClick="delImage('<%= images[i]._id %>');">Delete</i></button>
+ </td>
+</tr>
+<% } %>
+      </tbody>
+    </table>
+  </div>
+  <!-- list// -->
+</body>
+</html>

@@ -22,7 +22,12 @@ html, body{
 </style>
 </head>
 <body>
-Tag: <input type="text" id="tag" name="tag" placeholder="tag name for this image ..." value=""/>
+
+<div class="text-right">
+  <input type="button" class="btn btn-xs btn-info" value="test" onClick="test();"/>
+</div>
+
+Tag: <input type="text" id="tag" name="tag" placeholder="tag name" value=""/>
 
 <div id="canvas_div">
   <div id="cdiv"></div>
@@ -46,6 +51,10 @@ var stroke = null; //. { color: color, width: width, xys: [] }
 $(function(){
   init();
 });
+
+function test(){
+  location.href = './';
+}
 
 function init(){
   $('#cdiv').html( '<canvas width="80%" height="50%" id="mycanvas"></canvas>' );

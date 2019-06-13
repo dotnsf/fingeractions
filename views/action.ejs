@@ -22,6 +22,12 @@ html, body{
 #_mycanvas{
   border: 1px solid #333;
 }
+
+.ball{
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
 </style>
 </head>
 <body>
@@ -31,6 +37,8 @@ html, body{
   <br/>
   <input type="button" class="btn btn-xs btn-warning" value="reset" onClick="resetCanvas();"/>
   <input type="button" class="btn btn-xs btn-primary" value="action" onClick="action();"/>
+
+  <br/><img src="/ball.png" id="ball" class="ball"/>
 </div>
 
 <script>
@@ -94,9 +102,11 @@ function init(){
   //. マウスを上げたら、描画禁止(myDrawをfalse)
   canvas.addEventListener( "mouseup", function( e ){
     mouse.isDrawing = false;
+    action();
   });
   canvas.addEventListener( 'mouseleave', function( e ){
     mouse.isDrawing = false;
+    action();
   });
 
   canvas.addEventListener( "touchmove", function( e ){
@@ -133,9 +143,11 @@ function init(){
   //. タッチを上げたら、描画禁止(myDrawをfalse)
   canvas.addEventListener( "touchend", function( e ){
     mouse.isDrawing = false;
+    action();
   });
   canvas.addEventListener( 'touchcancel', function( e ){
     mouse.isDrawing = false;
+    action();
   });
 
   //. リサイズ時に Canvas サイズを変更する
@@ -213,12 +225,57 @@ function action(){
     success: function( result, dataType ){
       console.log( result );
 
-      var s = JSON.stringify( result.confidences, null, 2 );
-      alert( s );
-
-      if( result.id ){
-        resetCanvas();
+      var maxkey = null;
+      var maxconfidence = 0.0;
+      for( key in result.confidences ){
+        if( result.confidences[key] > maxconfidence ){
+          maxkey = key;
+          maxconfidence = result.confidences[key];
+        }
       }
+      result.confidences['maxkey'] = maxkey;
+      var s = JSON.stringify( result.confidences, null, 2 );
+      console.log( s );
+
+      switch( maxkey ){
+      case 'curve':
+        $('#ball').animate(
+          { 'top': '-100px', 'left': '100px' },
+          { 'duration': 400, 'easing': 'linear' }
+        ).animate(
+          { 'top': '-200px', 'left': '0px' },
+          { 'duration': 400, 'complete': function(){
+            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          } }
+        );
+        break;
+      case 'straight':
+        $('#ball').animate(
+          { 'top': '-200px' },
+          { 'duration': 800, 'complete': function(){
+            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          } }
+        );
+        break;
+      case 'right':
+        $('#ball').animate(
+          { 'top': '-200px', 'left': '100px' },
+          { 'duration': 800, 'complete': function(){
+            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          } }
+        );
+        break;
+      case 'left':
+        $('#ball').animate(
+          { 'top': '-200px', 'left': '-100px' },
+          { 'duration': 800, 'complete': function(){
+            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          } }
+        );
+        break;
+      }
+
+      resetCanvas();
     },
     error: function( jqXHR, textStatus, errorThrown ){
       console.log( textStatus + ': ' + errorThrown );

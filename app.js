@@ -214,6 +214,9 @@ app.post( '/search', function( req, res ){
               res.write( JSON.stringify( { status: false, message: err }, 2, null ) );
               res.end();
             }else{
+              fs.unlink( imgpath, function( e ){} );
+              fs.unlink( dst_imgpath, function( e ){} );
+              
               var docs = [];
               var tags = [];
               body.rows.forEach( function( _doc ){

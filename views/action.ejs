@@ -240,6 +240,7 @@ function action(){
       switch( maxkey ){
       case 'curve':
         $('#ball').animate(
+      /*
           { 'top': '-100px', 'left': '100px' },
           { 'duration': 400, 'easing': 'linear' }
         ).animate(
@@ -247,29 +248,41 @@ function action(){
           { 'duration': 400, 'complete': function(){
             $('#ball').css( { 'top': '0px', 'left': '0px' } );
           } }
+        */
+          { count: 1 },
+          {
+            duration: 800,
+            step: function( current ){
+              var point = getXY( current );
+              $('#ball').css( { left: point.x, top: point.y } );
+            },
+            complete: function(){
+              $('#ball').css( { top: '0px', left: '0px' } );
+            }
+          }
         );
         break;
       case 'straight':
         $('#ball').animate(
           { 'top': '-200px' },
-          { 'duration': 800, 'complete': function(){
-            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          { duration: 800, complete: function(){
+            $('#ball').css( { top: '0px', left: '0px' } );
           } }
         );
         break;
       case 'right':
         $('#ball').animate(
-          { 'top': '-200px', 'left': '100px' },
-          { 'duration': 800, 'complete': function(){
-            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          { top: '-200px', left: '100px' },
+          { duration: 800, complete: function(){
+            $('#ball').css( { top: '0px', left: '0px' } );
           } }
         );
         break;
       case 'left':
         $('#ball').animate(
-          { 'top': '-200px', 'left': '-100px' },
-          { 'duration': 800, 'complete': function(){
-            $('#ball').css( { 'top': '0px', 'left': '0px' } );
+          { top: '-200px', left: '-100px' },
+          { duration: 800, complete: function(){
+            $('#ball').css( { top: '0px', left: '0px' } );
           } }
         );
         break;
@@ -285,6 +298,28 @@ function action(){
 
 function redrawCanvas(){
   resetCanvas();
+}
+
+var ox = 100;
+var oy = 200;
+function getXY( t ){
+  /*
+  var tp = 1 - t;
+  var y = 200 * tp;
+  var x = 100 + Math.sqrt( 100 * 100 - ( y - 100 ) * ( y - 100 ) );
+
+  var px = x - ox;
+  var py = y - oy;
+  ox = x;
+  oy = y;
+
+  return { x: px, y: py };
+  */
+  var tp = 1 - t;
+  var y = -200 * t;
+  var x = Math.sqrt( 100 * 100 - ( y + 100 ) * ( y + 100 ) );
+
+  return { x: x, y: y };
 }
 </script>
 </body>
